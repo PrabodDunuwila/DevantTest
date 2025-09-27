@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="test" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <script language="js">
+        <![CDATA[
+            // Get server details
+            var serverDetails = {};
+            
+            // Get Java system properties
+            var javaVersion = java.lang.System.getProperty("java.version");
+            var javaVendor = java.lang.System.getProperty("java.vendor");
+            var osName = java.lang.System.getProperty("os.name");
+            var osVersion = java.lang.System.getProperty("os.version");
+            var osArch = java.lang.System.getProperty("os.arch");
+            var userDir = java.lang.System.getProperty("user.dir");
+            var javaHome = java.lang.System.getProperty("java.home");
+            
+            // Get server hostname and IP
+            try {
+                var InetAddress = java.net.InetAddress;
+                var localhost = InetAddress.getLocalHost();
+                var hostname = localhost.getHostName();
+                var hostAddress = localhost.getHostAddress();
+                
+                serverDetails.hostname = hostname;
+                serverDetails.ipAddress = hostAddress;
+            } catch (e) {
+                serverDetails.hostname = "Unable to retrieve";
+                serverDetails.ipAddress = "Unable to retrieve";
+            }
+            
+            // Get runtime information
+            var runtime = java.lang.Runtime.getRuntime();
+            var totalMemory = runtime.totalMemory();
+            var freeMemory = runtime.freeMemory();
+            var maxMemory = runtime.maxMemory();
+            var usedMemory = totalMemory - freeMemory;
+            var availableProcessors = runtime.availableProcessors();
+            
+            // Get current timestamp
+            var currentTime = new java.util.Date();
+            
+            // Build server details object
+            serverDetails.javaVersion = javaVersion;
+            serverDetails.javaVendor = javaVendor;
+            serverDetails.javaHome = javaHome;
+            serverDetails.osName = osName;
+            serverDetails.osVersion = osVersion;
+            serverDetails.osArch = osArch;
+            serverDetails.workingDirectory = userDir;
+            serverDetails.totalMemoryMB = Math.round(totalMemory / (1024 * 1024));
+            serverDetails.freeMemoryMB = Math.round(freeMemory / (1024 * 1024));
+            serverDetails.usedMemoryMB = Math.round(usedMemory / (1024 * 1024));
+            serverDetails.maxMemoryMB = Math.round(maxMemory / (1024 * 1024));
+            serverDetails.availableProcessors = availableProcessors;
+            serverDetails.timestamp = currentTime.toString();
+            
+            // Convert to JSON string
+            var serverDetailsJson = JSON.stringify(serverDetails, null, 2);
+            
+            // Log server details
+            print("=== Server Details ===");
+            print(serverDetailsJson);
+            
+            // Set server details as a message context property
+            mc.setProperty("SERVER_DETAILS", serverDetailsJson);
+            
+            // Optionally set individual properties for easy access
+            mc.setProperty("SERVER_HOSTNAME", serverDetails.hostname);
+            mc.setProperty("SERVER_IP", serverDetails.ipAddress);
+            mc.setProperty("JAVA_VERSION", serverDetails.javaVersion);
+            mc.setProperty("OS_NAME", serverDetails.osName);
+            mc.setProperty("USED_MEMORY_MB", serverDetails.usedMemoryMB);
+            mc.setProperty("TOTAL_MEMORY_MB", serverDetails.totalMemoryMB);
+            
+            print("Server details captured and set as message context properties");
+        ]]>
+    </script>
+    
+    <!-- Log mediator to display server details in the logs -->
+    <log level="custom">
+        <property name="ServerHostname" expression="get-property('SERVER_HOSTNAME')"/>
+        <property name="ServerIP" expression="get-property('SERVER_IP')"/>
+        <property name="JavaVersion" expression="get-property('JAVA_VERSION')"/>
+        <property name="OSName" expression="get-property('OS_NAME')"/>
+        <property name="UsedMemoryMB" expression="get-property('USED_MEMORY_MB')"/>
+        <property name="TotalMemoryMB" expression="get-property('TOTAL_MEMORY_MB')"/>
+        <property name="FullServerDetails" expression="get-property('SERVER_DETAILS')"/>
+    </log>
+</sequence>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/server" name="ServerDetailsAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" uri-template="/details">
+        <inSequence>
+            <!-- Call your test sequence that contains the script mediator -->
+            <sequence key="test"/>
+            
+            <!-- Create a response with server details -->
+            <payloadFactory media-type="json">
+                <format>
+                {
+                    "message": "Server details captured successfully",
+                    "serverInfo": $1,
+                    "hostname": "$2",
+                    "ipAddress": "$3",
+                    "javaVersion": "$4",
+                    "osName": "$5",
+                    "usedMemoryMB": $6,
+                    "totalMemoryMB": $7
+                }
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('SERVER_DETAILS')"/>
+                    <arg evaluator="xml" expression="get-property('SERVER_HOSTNAME')"/>
+                    <arg evaluator="xml" expression="get-property('SERVER_IP')"/>
+                    <arg evaluator="xml" expression="get-property('JAVA_VERSION')"/>
+                    <arg evaluator="xml" expression="get-property('OS_NAME')"/>
+                    <arg evaluator="xml" expression="get-property('USED_MEMORY_MB')"/>
+                    <arg evaluator="xml" expression="get-property('TOTAL_MEMORY_MB')"/>
+                </args>
+            </payloadFactory>
+            
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy name="ServerDetailsProxy" startOnLoad="true" transports="http https" xmlns="http://ws.apache.org/ns/synapse">
+    <target>
+        <inSequence>
+            <!-- Call your test sequence -->
+            <sequence key="test"/>
+            
+            <!-- Create response -->
+            <payloadFactory media-type="json">
+                <format>
+                {
+                    "status": "success",
+                    "message": "Server details retrieved",
+                    "data": $1
+                }
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('SERVER_DETAILS')"/>
+                </args>
+            </payloadFactory>
+            
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </target>
+</proxy>
